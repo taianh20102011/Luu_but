@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hộp Thư Kỷ Niệm - Lưu Bút Gửi Học Sinh</title>
+    <style>
+        :root {
+            --bg-color: #f4f1ea;
+            --paper-color: #ffffff;
+            --line-color: #e0dcd3;
+            --text-color: #2c3e50;
+            --primary-color: #d9534f;
+            --primary-hover: #c9302c;
+            --accent-color: #4a90e2;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            background-color: var(--paper-color);
+            width: 100%;
+            max-width: 650px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            padding: 30px 24px;
+            border: 1px solid #e6e1d6;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Hiệu ứng ghim giấy trang trí */
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90px;
+            height: 25px;
+            background-color: rgba(240, 173, 78, 0.4);
+            backdrop-filter: blur(2px);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            margin-top: 10px;
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            color: #3a506b;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            font-size: 1.05rem;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        .status-badge {
+            display: inline-block;
+            font-size: 0.85rem;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 4px 12px;
+            border-radius: 15px;
+            margin-top: 10px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        /* Giao diện trang vở có dòng kẻ */
+        .notebook-paper {
+            background: linear-gradient(var(--line-color) 1px, transparent 1px);
+            background-size: 100% 32px;
+            line-height: 32px;
+            margin-bottom: 25px;
+        }
+
+        .notebook-paper textarea {
+            width: 100%;
+            min-height: 224px; /* Tương đương 7 dòng kẻ */
+            background: transparent;
+            border: none;
+            resize: vertical;
+            font-size: 1.15rem;
+            line-height: 32px;
+            color: #1a252f;
+            padding: 0 5px;
+            outline: none;
+        }
+
+        /* Khu vực ký tên bằng tay */
+        .signature-section {
+            margin-bottom: 25px;
+        }
+
+        .signature-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #5a6b7c;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .clear-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: normal;
+            text-decoration: underline;
+        }
+
+        .signature-pad-wrapper {
+            border: 2px dashed #bdc3c7;
+            border-radius: 8px;
+            background-color: #fafafa;
+            position: relative;
+            touch-action: none; /* Ngăn cuộn trang khi đang ký trên điện thoại */
+        }
+
+        #signature-pad {
+            width: 100%;
+            height: 130px;
+            display: block;
+            cursor: crosshair;
+        }
+
+        /* Tải ảnh đính kèm */
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background-color: #f0f3f5;
+            border: 1px solid #dcdde1;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #57606f;
+            transition: background 0.2s;
+        }
+
+        .file-input-label:hover {
+            background-color: #e4e7eb;
+        }
+
+        #image-upload {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .preview-container {
+            margin-top: 10px;
+            display: none;
+            position: relative;
+        }
+
+        .preview-container img {
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 6px;
+            object-fit: cover;
+        }
+
+        /* Nút gửi lớn */
+        .submit-btn {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 16px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(217, 83, 79, 0.2);
+            transition: all 0.2s;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        /* Màn hình thông báo thành công (Time Capsule) */
+        .success-screen {
+            display: none;
+            text-align: center;
+            padding: 40px 10px;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: #2e7d32;
+            margin-bottom: 20px;
+        }
+
+        .success-screen h2 {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .success-screen p {
+            color: #7f8c8d;
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+
+        /* Responsive điều chỉnh cho màn hình quá nhỏ */
+        @media (max-width: 480px) {
+            .container {
+                padding: 24px 16px;
+            }
+            header h1 {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="main-card">
+        <!-- PHÂN HỆ 1: GIAO DIỆN VIẾT DÀNH CHO GIÁO VIÊN -->
+        <div id="form-interface">
+            <header>
+                <!-- Giả định Route đang là /viet/co-thao -->
+                <h1>Chào mừng Cô Thảo đến với Hộp Thư Kỷ Niệm!</h1>
+                <p>"Em cảm ơn Cô đã luôn đồng hành và dìu dắt em!"</p>
+                <div class="status-badge" id="save-status">✓ Hệ thống đang tự động lưu...</div>
+            </header>
+
+            <main>
+                <!-- Ô nhập lời chúc kiểu trang tập học sinh -->
+                <div class="notebook-paper">
+                    <textarea id="letter-content" placeholder="Cô viết lời chúc, lời nhắn nhủ hay những kỷ niệm của cô trò mình vào đây nhé cô..."></textarea>
+                </div>
+
+                <!-- Khu vực lưu chữ ký bằng nét vẽ tay -->
+                <div class="signature-section">
+                    <div class="signature-title">
+                        <span>Cô ký tên hoặc để lại lời nhắn bằng tay vào đây:</span>
+                        <button type="button" class="clear-btn" id="clear-sig">Xóa ký lại</button>
+                    </div>
+                    <div class="signature-pad-wrapper">
+                        <canvas id="signature-pad"></canvas>
+                    </div>
+                </div>
+
+                <!-- Đính kèm hình ảnh kỷ niệm -->
+                <div class="upload-section">
+                    <div class="file-input-wrapper">
+                        <div class="file-input-label">
+                            📷 Tải lên ảnh kỷ niệm chung (Nếu có)
+                        </div>
+                        <input type="file" id="image-upload" accept="image/*">
+                    </div>
+                    <div class="preview-container" id="preview-box">
+                        <img id="image-preview" src="#" alt="Xem trước ảnh">
+                    </div>
+                </div>
+
+                <!-- Nút gửi hoàn tất -->
+                <button type="button" class="submit-btn" id="send-btn">Gửi Gắm Kỷ Niệm</button>
+            </main>
+        </div>
+
+        <!-- PHÂN HỆ 2: MÀN HÌNH KHÓA THỜI GIAN (TIME CAPSULE) -->
+        <div id="success-interface" class="success-screen">
+            <div class="success-icon">🔒</div>
+            <h2>Gửi Thư Thành Công!</h2>
+            <p>
+                Lời nhắn nhủ quý giá của Cô đã được niêm phong cẩn thận bên trong chiếc hộp thời gian.<br>
+                <strong>Học trò sẽ chỉ mở được bức thư này vào ngày bế giảng sắp tới!</strong>
+            </p>
+            <p style="margin-top: 20px; font-size: 0.9rem; color: #bdc3c7;">Cảm ơn cô rất nhiều vì món quà tinh thần này ạ ♥</p>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. XỬ LÝ CANVAS ĐỂ KÝ TÊN BẰNG TAY ---
+        const canvas = document.getElementById('signature-pad');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+
+        // Đảm bảo kích thước hiển thị của canvas chuẩn xác
+        function resizeCanvas() {
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * ratio;
+            canvas.height = canvas.offsetHeight * ratio;
+            ctx.scale(ratio, ratio);
+            
+            // Cấu hình nét vẽ thanh thoát mảnh mai
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = '#2c3e50'; // Màu mực xanh đen nhã nhặn
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        // Đợi bố cục CSS dựng xong rồi resize canvas luôn
+        setTimeout(resizeCanvas, 100);
+
+        // Lấy tọa độ chuột hoặc ngón tay chạm chính xác
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            const pos = getPos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const pos = getPos(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            triggerAutoSave();
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        // Sự kiện chuột máy tính
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        window.addEventListener('mouseup', stopDrawing);
+
+        // Sự kiện cảm ứng trên màn hình điện thoại
+        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchmove', draw);
+        canvas.addEventListener('touchend', stopDrawing);
+
+        // Nút xóa chữ ký
+        document.getElementById('clear-sig').addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+
+
+        // --- 2. XỬ LÝ ẢNH XEM TRƯỚC (PREVIEW PHOTO) ---
+        const imageUpload = document.getElementById('image-upload');
+        const previewBox = document.getElementById('preview-box');
+        const imagePreview = document.getElementById('image-preview');
+
+        imageUpload.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.setAttribute('src', e.target.result);
+                    previewBox.style.display = 'block';
+                    triggerAutoSave();
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+
+        // --- 3. MÔ PHỎNG TÍNH NĂNG TỰ ĐỘNG LƯU (AUTO-SAVE) ---
+        const letterContent = document.getElementById('letter-content');
+        const saveStatus = document.getElementById('save-status');
+        let saveTimeout;
+
+        function triggerAutoSave() {
+            saveStatus.textContent = "✍ Cô đang gõ...";
+            saveStatus.style.backgroundColor = "#fff3cd";
+            saveStatus.style.color = "#856404";
+            
+            clearTimeout(saveTimeout);
+            // Sau khi thầy cô ngừng gõ 1.5 giây thì báo đã lưu nháp thành công
+            saveTimeout = setTimeout(() => {
+                saveStatus.textContent = "✓ Hệ thống đã lưu bản nháp tạm thời";
+                saveStatus.style.backgroundColor = "#e8f5e9";
+                saveStatus.style.color = "#2e7d32";
+            }, 1500);
+        }
+
+        letterContent.addEventListener('input', triggerAutoSave);
+
+
+        // --- 4. NÚT GỬI & HIỆN ỨNG TIMECAPSULE KHÓA THƯ ---
+        const sendBtn = document.getElementById('send-btn');
+        const formInterface = document.getElementById('form-interface');
+        const successInterface = document.getElementById('success-interface');
+
+        sendBtn.addEventListener('click', () => {
+            // Kiểm tra nhanh xem giáo viên đã viết gì chưa
+            if(!letterContent.value.trim()){
+                alert("Cô ơi, cô để lại đôi lời nhắn nhủ trước khi bấm gửi nhé ạ!");
+                return;
+            }
+            
+            // Chuyển đổi giao diện sang màn hình khóa hòm thư
+            formInterface.style.display = 'none';
+            successInterface.style.display = 'block';
+            
+            // Cuộn mượt lên đầu trang nếu giao diện dài
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+</body>
+      </html>
